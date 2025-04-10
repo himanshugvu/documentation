@@ -1,0 +1,41 @@
+sequenceDiagram
+    participant Channel as Channel/Interfacing System
+    participant GAPI as Global API (GAPI)
+    
+    box Core Banking
+        participant API as API Layer
+        participant Core as Core Engine
+        participant Custom as Custom Engine
+    end
+    
+    Channel->>GAPI: Transaction Request
+    GAPI->>GAPI: Convert Request to Core Format
+    GAPI->>API: Forward Converted Request
+    rect rgb(224, 247, 250)
+ par Pre-processing Validation
+    API->>Core: Pre-processing Validation
+    API->>Custom: Pre-processing Validation
+
+    Core-->>API: Validation Result
+    Custom-->>API: Validation Result
+    end
+    end
+    rect rgb(232, 245, 233)
+     par Business Rule Validation
+    API->>Core: Business Rule Validation
+    API->>Custom: Business Rule Validation
+    
+    Core-->>API: Business Rule Validation Result
+    Custom-->>API: Business Rule Validation Result
+end
+end
+rect rgb(255, 236, 179)
+    API->>Core: Transaction Posting
+    Core-->>API: Posting Result
+end
+rect rgb(225, 190, 231)
+    API->>Custom: Post-processing
+    Custom-->>API: Post-processing Result
+end
+    API-->>GAPI: Transaction Completed
+    GAPI-->>Channel: Transaction Response
