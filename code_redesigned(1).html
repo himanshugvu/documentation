@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Workflow Variations Gallery</title>
+<style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #0a0a0c;
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      color: #fff;
+      padding: 60px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 80px;
+    }
+
+    .variant-container {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .variant-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding-left: 12px;
+    }
+
+    .variant-indicator {
+      width: 4px;
+      height: 24px;
+      background: var(--accent-main, #fff);
+      border-radius: 2px;
+    }
+
+    .variant-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+      font-family: 'Courier New', Consolas, monospace;
+    }
+
+    .workflow {
+      position: relative;
+      width: 1060px;
+      height: 380px;
+      border-radius: 26px;
+      overflow: hidden;
+      box-shadow: 0 40px 120px rgba(0,0,0,0.65);
+      background-color: var(--bg-main, #0f1115);
+      border: 1px solid var(--border-main, rgba(255,255,255,0.1));
+      transition: all 0.4s ease;
+    }
+
+    .workflow::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: radial-gradient(circle at center, black, transparent 85%);
+      opacity: 0.4;
+    }
+
+    svg.lines {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      overflow: visible;
+    }
+
+    .line {
+      fill: none;
+      stroke-width: 3.5;
+      stroke-linecap: round;
+      stroke-dasharray: 10 9;
+      animation: dashMove 1.5s linear infinite;
+      filter: drop-shadow(0 0 6px var(--line-glow));
+    }
+
+    @keyframes dashMove {
+      to { stroke-dashoffset: -38; }
+    }
+
+    .node {
+      position: absolute;
+      width: 132px;
+      height: 106px;
+      z-index: 3;
+      border-radius: 20px;
+      display: grid;
+      place-items: center;
+      isolation: isolate;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      cursor: pointer;
+    }
+
+    .node:hover {
+      transform: translateY(-8px) scale(1.05);
+    }
+
+    .node::after {
+      content: attr(data-step);
+      position: absolute;
+      top: -16px;
+      right: -16px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+      background: #101415;
+      border: 2px solid var(--node-accent);
+      box-shadow: 0 0 15px var(--node-glow);
+    }
+
+    .node svg {
+      width: 52px;
+      height: 52px;
+      fill: none;
+      stroke: #fff;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 10px var(--node-glow));
+    }
+
+    /* Fixed Positions per SCREEN_16 */
+    .box-1 { left: 45px; top: 132px; }
+    .box-2 { left: 335px; top: 62px; }
+    .box-3 { left: 485px; top: 222px; }
+    .box-4 { left: 825px; top: 122px; width: 126px; height: 126px; transform: rotate(45deg); border-radius: 24px; }
+    .box-4 svg { transform: rotate(-45deg); }
+    .box-4::after { transform: rotate(-45deg); top: 38px; right: -22px; }
+    .box-4:hover { transform: rotate(45deg) translateY(-8px) scale(1.05); }
+
+    /* Node Style Variants */
+    .style-neon { 
+      background: rgba(0,0,0,0.4);
+      border: 2px solid var(--node-accent);
+      box-shadow: inset 0 0 15px var(--node-glow), 0 0 25px var(--node-glow);
+    }
+    
+    .style-glass {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.15);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.05);
+    }
+    .style-glass::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(circle at 30% 20%, var(--node-accent), transparent 70%);
+      opacity: 0.15;
+    }
+
+    .style-minimal {
+      background: transparent;
+      border: 1.5px dashed var(--node-accent);
+      opacity: 0.8;
+    }
+    .style-minimal:hover { opacity: 1; border-style: solid; }
+
+    .style-acrylic {
+      background: linear-gradient(145deg, var(--node-accent-soft), #12141a);
+      border: 1px solid rgba(255,255,255,0.2);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+
+    /* Common Base Markers */
+    .base {
+      position: absolute;
+      height: 4px;
+      border-radius: 999px;
+      z-index: 4;
+      background: var(--node-accent);
+      box-shadow: 0 0 15px var(--node-glow);
+    }
+    .base-1 { left: 45px; top: 252px; width: 132px; }
+    .base-2 { left: 335px; top: 182px; width: 132px; }
+    .base-3 { left: 485px; top: 342px; width: 132px; }
+    .base-4 { left: 815px; top: 268px; width: 146px; }
+
+  
+
+    /* Redesigned semantic workflow cards */
+    .node {
+      grid-template-rows: 1fr auto;
+      gap: 6px;
+      padding: 12px 10px 10px;
+      overflow: visible;
+    }
+
+    .node .icon-wrap {
+      width: 58px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+
+    .node .node-label {
+      font-family: 'Courier New', Consolas, monospace;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      line-height: 1;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.92);
+      text-shadow: 0 0 10px var(--node-glow);
+      white-space: nowrap;
+    }
+
+    .node svg {
+      width: 54px;
+      height: 54px;
+    }
+
+    .node.file-transfer::before,
+    .node.mainframe::before,
+    .node.bo-system::before,
+    .node.report-node::before {
+      content: "";
+      position: absolute;
+      inset: 7px;
+      border-radius: 14px;
+      border: 1px solid color-mix(in srgb, var(--node-accent) 62%, transparent);
+      opacity: 0.42;
+      pointer-events: none;
+    }
+
+    .file-transfer .packet {
+      fill: var(--node-accent);
+      stroke: none;
+      filter: drop-shadow(0 0 7px var(--node-glow));
+      animation: packetPulse 1.4s ease-in-out infinite alternate;
+    }
+
+    .file-transfer .arrow-line {
+      stroke-dasharray: 5 4;
+      animation: dashMove 1.2s linear infinite;
+    }
+
+    @keyframes packetPulse {
+      from { opacity: 0.45; transform: translateX(-2px); }
+      to { opacity: 1; transform: translateX(3px); }
+    }
+
+    .mainframe .rack-line {
+      stroke-width: 2;
+      opacity: 0.75;
+    }
+
+    .mainframe .status-dot {
+      fill: var(--node-accent);
+      stroke: none;
+      filter: drop-shadow(0 0 5px var(--node-glow));
+    }
+
+    .bo-system .bo-text {
+      font-family: 'Courier New', Consolas, monospace;
+      font-size: 18px;
+      font-weight: 800;
+      fill: #fff;
+      stroke: none;
+      letter-spacing: -1px;
+      filter: drop-shadow(0 0 8px var(--node-glow));
+    }
+
+    .bo-system .hub {
+      fill: var(--node-accent);
+      stroke: none;
+      filter: drop-shadow(0 0 6px var(--node-glow));
+    }
+
+    .report-node .chart-fill {
+      fill: var(--node-accent);
+      stroke: none;
+      opacity: 0.42;
+    }
+
+    .report-node .fold {
+      fill: color-mix(in srgb, var(--node-accent) 34%, transparent);
+      stroke: var(--node-accent);
+    }
+
+    .box-4 .node-label,
+    .box-4 .icon-wrap { transform: rotate(-45deg); }
+    .box-4 svg { transform: none; }
+</style>
+</head>
+<body>
+<!-- V1: CYBERPUNK NEON -->
+<div class="variant-container" id="v1" style="--accent-main: #ff00ff;">
+<div class="variant-header">
+<div class="variant-indicator"></div>
+<h2 class="variant-title">01 / Cyberpunk Neon (Neon Style)</h2>
+</div>
+<div class="workflow" style="--bg-main: #050508; --border-main: rgba(255,0,255,0.1);">
+<svg class="lines" viewbox="0 0 1060 380">
+<path class="line" d="M177 185 C255 185, 250 115, 335 115" style="stroke: #00f2ff; --line-glow: #00f2ff;"></path>
+<path class="line" d="M177 185 C285 185, 340 275, 485 275" style="stroke: #ff00ff; --line-glow: #ff00ff;"></path>
+<path class="line" d="M467 115 C620 115, 705 120, 825 180" style="stroke: #7000ff; --line-glow: #7000ff;"></path>
+<path class="line" d="M617 275 C710 275, 735 210, 825 200" style="stroke: #00ff9d; --line-glow: #00ff9d;"></path>
+</svg>
+<div aria-label="FILE TRANSFER" class="node box-1 style-neon file-transfer" data-step="1" style="--node-accent: #00f2ff; --node-glow: rgba(0,242,255,0.5);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<path d="M13 14h18l5 6h15a4 4 0 0 1 4 4v24a5 5 0 0 1-5 5H14a5 5 0 0 1-5-5V18a4 4 0 0 1 4-4z"></path>
+<path class="arrow-line" d="M20 35h22"></path>
+<path d="M36 27l9 8-9 8"></path>
+<rect class="packet" height="8" rx="2" width="8" x="17" y="30"></rect>
+<rect class="packet" height="8" rx="2" width="8" x="27" y="30"></rect>
+</svg></div><span class="node-label">FILE TRANSFER</span></div>
+<div aria-label="MAINFRAME" class="node box-2 style-neon mainframe" data-step="2" style="--node-accent: #ff00ff; --node-glow: rgba(255,0,255,0.5);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<rect height="50" rx="6" width="36" x="14" y="7"></rect>
+<line class="rack-line" x1="20" x2="44" y1="18" y2="18"></line>
+<line class="rack-line" x1="20" x2="44" y1="29" y2="29"></line>
+<line class="rack-line" x1="20" x2="44" y1="40" y2="40"></line>
+<circle class="status-dot" cx="23" cy="50" r="2.5"></circle>
+<circle class="status-dot" cx="32" cy="50" r="2.5"></circle>
+<circle class="status-dot" cx="41" cy="50" r="2.5"></circle>
+</svg></div><span class="node-label">MAINFRAME</span></div>
+<div aria-label="BO" class="node box-3 style-neon bo-system" data-step="3" style="--node-accent: #7000ff; --node-glow: rgba(112,0,255,0.5);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<circle cx="32" cy="31" r="10"></circle>
+<circle cx="16" cy="18" r="6"></circle>
+<circle cx="48" cy="18" r="6"></circle>
+<circle cx="16" cy="46" r="6"></circle>
+<circle cx="48" cy="46" r="6"></circle>
+<path d="M22 21l8 6M42 21l-8 6M22 43l8-7M42 43l-8-7"></path>
+<text class="bo-text" x="21" y="37">BO</text>
+<circle class="hub" cx="16" cy="18" r="2"></circle><circle class="hub" cx="48" cy="18" r="2"></circle>
+<circle class="hub" cx="16" cy="46" r="2"></circle><circle class="hub" cx="48" cy="46" r="2"></circle>
+</svg></div><span class="node-label">BO</span></div>
+<div aria-label="REPORT" class="node box-4 style-neon report-node" data-step="4" style="--node-accent: #00ff9d; --node-glow: rgba(0,255,157,0.5);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<path d="M18 8h22l8 8v40H18z"></path>
+<path class="fold" d="M40 8v10h10"></path>
+<rect class="chart-fill" height="10" rx="1" width="5" x="24" y="39"></rect>
+<rect class="chart-fill" height="17" rx="1" width="5" x="32" y="32"></rect>
+<rect class="chart-fill" height="24" rx="1" width="5" x="40" y="25"></rect>
+<path d="M24 25h14M24 32h8M24 50h22"></path>
+</svg></div><span class="node-label">REPORT</span></div>
+</div>
+</div>
+<!-- V2: EMERALD & GOLD -->
+<div class="variant-container" id="v2" style="--accent-main: #ffd700;">
+<div class="variant-header">
+<div class="variant-indicator"></div>
+<h2 class="variant-title">02 / Emerald &amp; Gold (Acrylic Style)</h2>
+</div>
+<div class="workflow" style="--bg-main: #06110d; --border-main: rgba(255,215,0,0.15);">
+<svg class="lines" viewbox="0 0 1060 380">
+<path class="line" d="M177 185 C255 185, 250 115, 335 115" style="stroke: #ffd700; --line-glow: #ffd700;"></path>
+<path class="line" d="M177 185 C285 185, 340 275, 485 275" style="stroke: #00ff88; --line-glow: #00ff88;"></path>
+<path class="line" d="M467 115 C620 115, 705 120, 825 180" style="stroke: #ffbb00; --line-glow: #ffbb00;"></path>
+<path class="line" d="M617 275 C710 275, 735 210, 825 200" style="stroke: #00e5ff; --line-glow: #00e5ff;"></path>
+</svg>
+<div aria-label="FILE TRANSFER" class="node box-1 style-acrylic file-transfer" data-step="1" style="--node-accent: #ffd700; --node-accent-soft: rgba(255,215,0,0.2); --node-glow: rgba(255,215,0,0.3);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<path d="M13 14h18l5 6h15a4 4 0 0 1 4 4v24a5 5 0 0 1-5 5H14a5 5 0 0 1-5-5V18a4 4 0 0 1 4-4z"></path>
+<path class="arrow-line" d="M20 35h22"></path>
+<path d="M36 27l9 8-9 8"></path>
+<rect class="packet" height="8" rx="2" width="8" x="17" y="30"></rect>
+<rect class="packet" height="8" rx="2" width="8" x="27" y="30"></rect>
+</svg></div><span class="node-label">FILE TRANSFER</span></div>
+<div aria-label="MAINFRAME" class="node box-2 style-acrylic mainframe" data-step="2" style="--node-accent: #00ff88; --node-accent-soft: rgba(0,255,136,0.2); --node-glow: rgba(0,255,136,0.3);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<rect height="50" rx="6" width="36" x="14" y="7"></rect>
+<line class="rack-line" x1="20" x2="44" y1="18" y2="18"></line>
+<line class="rack-line" x1="20" x2="44" y1="29" y2="29"></line>
+<line class="rack-line" x1="20" x2="44" y1="40" y2="40"></line>
+<circle class="status-dot" cx="23" cy="50" r="2.5"></circle>
+<circle class="status-dot" cx="32" cy="50" r="2.5"></circle>
+<circle class="status-dot" cx="41" cy="50" r="2.5"></circle>
+</svg></div><span class="node-label">MAINFRAME</span></div>
+<div aria-label="BO" class="node box-3 style-acrylic bo-system" data-step="3" style="--node-accent: #ffbb00; --node-accent-soft: rgba(255,187,0,0.2); --node-glow: rgba(255,187,0,0.3);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<circle cx="32" cy="31" r="10"></circle>
+<circle cx="16" cy="18" r="6"></circle>
+<circle cx="48" cy="18" r="6"></circle>
+<circle cx="16" cy="46" r="6"></circle>
+<circle cx="48" cy="46" r="6"></circle>
+<path d="M22 21l8 6M42 21l-8 6M22 43l8-7M42 43l-8-7"></path>
+<text class="bo-text" x="21" y="37">BO</text>
+<circle class="hub" cx="16" cy="18" r="2"></circle><circle class="hub" cx="48" cy="18" r="2"></circle>
+<circle class="hub" cx="16" cy="46" r="2"></circle><circle class="hub" cx="48" cy="46" r="2"></circle>
+</svg></div><span class="node-label">BO</span></div>
+<div aria-label="REPORT" class="node box-4 style-acrylic report-node" data-step="4" style="--node-accent: #00e5ff; --node-accent-soft: rgba(0,229,255,0.2); --node-glow: rgba(0,229,255,0.3);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<path d="M18 8h22l8 8v40H18z"></path>
+<path class="fold" d="M40 8v10h10"></path>
+<rect class="chart-fill" height="10" rx="1" width="5" x="24" y="39"></rect>
+<rect class="chart-fill" height="17" rx="1" width="5" x="32" y="32"></rect>
+<rect class="chart-fill" height="24" rx="1" width="5" x="40" y="25"></rect>
+<path d="M24 25h14M24 32h8M24 50h22"></path>
+</svg></div><span class="node-label">REPORT</span></div>
+</div>
+</div>
+<!-- V3: DEEP SEA TEAL -->
+<div class="variant-container" id="v3" style="--accent-main: #00ced1;">
+<div class="variant-header">
+<div class="variant-indicator"></div>
+<h2 class="variant-title">03 / Deep Sea Teal (Glassmorphism)</h2>
+</div>
+<div class="workflow" style="--bg-main: #020b1a; --border-main: rgba(0,206,209,0.1);">
+<svg class="lines" viewbox="0 0 1060 380">
+<path class="line" d="M177 185 C255 185, 250 115, 335 115" style="stroke: #20b2aa; --line-glow: #20b2aa;"></path>
+<path class="line" d="M177 185 C285 185, 340 275, 485 275" style="stroke: #00ced1; --line-glow: #00ced1;"></path>
+<path class="line" d="M467 115 C620 115, 705 120, 825 180" style="stroke: #afeeee; --line-glow: #afeeee;"></path>
+<path class="line" d="M617 275 C710 275, 735 210, 825 200" style="stroke: #5f9ea0; --line-glow: #5f9ea0;"></path>
+</svg>
+<div aria-label="FILE TRANSFER" class="node box-1 style-glass file-transfer" data-step="1" style="--node-accent: #20b2aa; --node-glow: rgba(32,178,170,0.4);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<path d="M13 14h18l5 6h15a4 4 0 0 1 4 4v24a5 5 0 0 1-5 5H14a5 5 0 0 1-5-5V18a4 4 0 0 1 4-4z"></path>
+<path class="arrow-line" d="M20 35h22"></path>
+<path d="M36 27l9 8-9 8"></path>
+<rect class="packet" height="8" rx="2" width="8" x="17" y="30"></rect>
+<rect class="packet" height="8" rx="2" width="8" x="27" y="30"></rect>
+</svg></div><span class="node-label">FILE TRANSFER</span></div>
+<div aria-label="MAINFRAME" class="node box-2 style-glass mainframe" data-step="2" style="--node-accent: #00ced1; --node-glow: rgba(0,206,209,0.4);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<rect height="50" rx="6" width="36" x="14" y="7"></rect>
+<line class="rack-line" x1="20" x2="44" y1="18" y2="18"></line>
+<line class="rack-line" x1="20" x2="44" y1="29" y2="29"></line>
+<line class="rack-line" x1="20" x2="44" y1="40" y2="40"></line>
+<circle class="status-dot" cx="23" cy="50" r="2.5"></circle>
+<circle class="status-dot" cx="32" cy="50" r="2.5"></circle>
+<circle class="status-dot" cx="41" cy="50" r="2.5"></circle>
+</svg></div><span class="node-label">MAINFRAME</span></div>
+<div aria-label="BO" class="node box-3 style-glass bo-system" data-step="3" style="--node-accent: #afeeee; --node-glow: rgba(175,238,238,0.4);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<circle cx="32" cy="31" r="10"></circle>
+<circle cx="16" cy="18" r="6"></circle>
+<circle cx="48" cy="18" r="6"></circle>
+<circle cx="16" cy="46" r="6"></circle>
+<circle cx="48" cy="46" r="6"></circle>
+<path d="M22 21l8 6M42 21l-8 6M22 43l8-7M42 43l-8-7"></path>
+<text class="bo-text" x="21" y="37">BO</text>
+<circle class="hub" cx="16" cy="18" r="2"></circle><circle class="hub" cx="48" cy="18" r="2"></circle>
+<circle class="hub" cx="16" cy="46" r="2"></circle><circle class="hub" cx="48" cy="46" r="2"></circle>
+</svg></div><span class="node-label">BO</span></div>
+<div aria-label="REPORT" class="node box-4 style-glass report-node" data-step="4" style="--node-accent: #5f9ea0; --node-glow: rgba(95,158,160,0.4);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<path d="M18 8h22l8 8v40H18z"></path>
+<path class="fold" d="M40 8v10h10"></path>
+<rect class="chart-fill" height="10" rx="1" width="5" x="24" y="39"></rect>
+<rect class="chart-fill" height="17" rx="1" width="5" x="32" y="32"></rect>
+<rect class="chart-fill" height="24" rx="1" width="5" x="40" y="25"></rect>
+<path d="M24 25h14M24 32h8M24 50h22"></path>
+</svg></div><span class="node-label">REPORT</span></div>
+</div>
+</div>
+<!-- V4: VOLCANIC RED -->
+<div class="variant-container" id="v4" style="--accent-main: #ff4500;">
+<div class="variant-header">
+<div class="variant-indicator"></div>
+<h2 class="variant-title">04 / Volcanic Red (Minimalist Stroke)</h2>
+</div>
+<div class="workflow" style="--bg-main: #120e0e; --border-main: rgba(255,69,0,0.2);">
+<svg class="lines" viewbox="0 0 1060 380">
+<path class="line" d="M177 185 C255 185, 250 115, 335 115" style="stroke: #ff0000; --line-glow: #ff0000;"></path>
+<path class="line" d="M177 185 C285 185, 340 275, 485 275" style="stroke: #ff4500; --line-glow: #ff4500;"></path>
+<path class="line" d="M467 115 C620 115, 705 120, 825 180" style="stroke: #ff8c00; --line-glow: #ff8c00;"></path>
+<path class="line" d="M617 275 C710 275, 735 210, 825 200" style="stroke: #dc143c; --line-glow: #dc143c;"></path>
+</svg>
+<div aria-label="FILE TRANSFER" class="node box-1 style-minimal file-transfer" data-step="1" style="--node-accent: #ff0000; --node-glow: rgba(255,0,0,0.4);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<path d="M13 14h18l5 6h15a4 4 0 0 1 4 4v24a5 5 0 0 1-5 5H14a5 5 0 0 1-5-5V18a4 4 0 0 1 4-4z"></path>
+<path class="arrow-line" d="M20 35h22"></path>
+<path d="M36 27l9 8-9 8"></path>
+<rect class="packet" height="8" rx="2" width="8" x="17" y="30"></rect>
+<rect class="packet" height="8" rx="2" width="8" x="27" y="30"></rect>
+</svg></div><span class="node-label">FILE TRANSFER</span></div>
+<div aria-label="MAINFRAME" class="node box-2 style-minimal mainframe" data-step="2" style="--node-accent: #ff4500; --node-glow: rgba(255,69,0,0.4);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<rect height="50" rx="6" width="36" x="14" y="7"></rect>
+<line class="rack-line" x1="20" x2="44" y1="18" y2="18"></line>
+<line class="rack-line" x1="20" x2="44" y1="29" y2="29"></line>
+<line class="rack-line" x1="20" x2="44" y1="40" y2="40"></line>
+<circle class="status-dot" cx="23" cy="50" r="2.5"></circle>
+<circle class="status-dot" cx="32" cy="50" r="2.5"></circle>
+<circle class="status-dot" cx="41" cy="50" r="2.5"></circle>
+</svg></div><span class="node-label">MAINFRAME</span></div>
+<div aria-label="BO" class="node box-3 style-minimal bo-system" data-step="3" style="--node-accent: #ff8c00; --node-glow: rgba(255,140,0,0.4);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<circle cx="32" cy="31" r="10"></circle>
+<circle cx="16" cy="18" r="6"></circle>
+<circle cx="48" cy="18" r="6"></circle>
+<circle cx="16" cy="46" r="6"></circle>
+<circle cx="48" cy="46" r="6"></circle>
+<path d="M22 21l8 6M42 21l-8 6M22 43l8-7M42 43l-8-7"></path>
+<text class="bo-text" x="21" y="37">BO</text>
+<circle class="hub" cx="16" cy="18" r="2"></circle><circle class="hub" cx="48" cy="18" r="2"></circle>
+<circle class="hub" cx="16" cy="46" r="2"></circle><circle class="hub" cx="48" cy="46" r="2"></circle>
+</svg></div><span class="node-label">BO</span></div>
+<div aria-label="REPORT" class="node box-4 style-minimal report-node" data-step="4" style="--node-accent: #dc143c; --node-glow: rgba(220,20,60,0.4);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<path d="M18 8h22l8 8v40H18z"></path>
+<path class="fold" d="M40 8v10h10"></path>
+<rect class="chart-fill" height="10" rx="1" width="5" x="24" y="39"></rect>
+<rect class="chart-fill" height="17" rx="1" width="5" x="32" y="32"></rect>
+<rect class="chart-fill" height="24" rx="1" width="5" x="40" y="25"></rect>
+<path d="M24 25h14M24 32h8M24 50h22"></path>
+</svg></div><span class="node-label">REPORT</span></div>
+</div>
+</div>
+<!-- V5: ARCTIC FROST -->
+<div class="variant-container" id="v5" style="--accent-main: #00bfff;">
+<div class="variant-header">
+<div class="variant-indicator"></div>
+<h2 class="variant-title">05 / Arctic Frost (Advanced Glass)</h2>
+</div>
+<div class="workflow" style="--bg-main: #f0f4f8; --border-main: rgba(0,191,255,0.2);">
+<svg class="lines" viewbox="0 0 1060 380">
+<path class="line" d="M177 185 C255 185, 250 115, 335 115" style="stroke: #00bfff; --line-glow: #00bfff;"></path>
+<path class="line" d="M177 185 C285 185, 340 275, 485 275" style="stroke: #1e90ff; --line-glow: #1e90ff;"></path>
+<path class="line" d="M467 115 C620 115, 705 120, 825 180" style="stroke: #87ceeb; --line-glow: #87ceeb;"></path>
+<path class="line" d="M617 275 C710 275, 735 210, 825 200" style="stroke: #4682b4; --line-glow: #4682b4;"></path>
+</svg>
+<div aria-label="FILE TRANSFER" class="node box-1 style-glass file-transfer" data-step="1" style="--node-accent: #00bfff; --node-glow: rgba(0,191,255,0.4); background: rgba(255,255,255,0.7);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<path d="M13 14h18l5 6h15a4 4 0 0 1 4 4v24a5 5 0 0 1-5 5H14a5 5 0 0 1-5-5V18a4 4 0 0 1 4-4z"></path>
+<path class="arrow-line" d="M20 35h22"></path>
+<path d="M36 27l9 8-9 8"></path>
+<rect class="packet" height="8" rx="2" width="8" x="17" y="30"></rect>
+<rect class="packet" height="8" rx="2" width="8" x="27" y="30"></rect>
+</svg></div><span class="node-label">FILE TRANSFER</span></div>
+<div aria-label="MAINFRAME" class="node box-2 style-glass mainframe" data-step="2" style="--node-accent: #1e90ff; --node-glow: rgba(30,144,255,0.4); background: rgba(255,255,255,0.7);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<rect height="50" rx="6" width="36" x="14" y="7"></rect>
+<line class="rack-line" x1="20" x2="44" y1="18" y2="18"></line>
+<line class="rack-line" x1="20" x2="44" y1="29" y2="29"></line>
+<line class="rack-line" x1="20" x2="44" y1="40" y2="40"></line>
+<circle class="status-dot" cx="23" cy="50" r="2.5"></circle>
+<circle class="status-dot" cx="32" cy="50" r="2.5"></circle>
+<circle class="status-dot" cx="41" cy="50" r="2.5"></circle>
+</svg></div><span class="node-label">MAINFRAME</span></div>
+<div aria-label="BO" class="node box-3 style-glass bo-system" data-step="3" style="--node-accent: #87ceeb; --node-glow: rgba(135,206,235,0.4); background: rgba(255,255,255,0.7);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<circle cx="32" cy="31" r="10"></circle>
+<circle cx="16" cy="18" r="6"></circle>
+<circle cx="48" cy="18" r="6"></circle>
+<circle cx="16" cy="46" r="6"></circle>
+<circle cx="48" cy="46" r="6"></circle>
+<path d="M22 21l8 6M42 21l-8 6M22 43l8-7M42 43l-8-7"></path>
+<text class="bo-text" x="21" y="37">BO</text>
+<circle class="hub" cx="16" cy="18" r="2"></circle><circle class="hub" cx="48" cy="18" r="2"></circle>
+<circle class="hub" cx="16" cy="46" r="2"></circle><circle class="hub" cx="48" cy="46" r="2"></circle>
+</svg></div><span class="node-label">BO</span></div>
+<div aria-label="REPORT" class="node box-4 style-glass report-node" data-step="4" style="--node-accent: #4682b4; --node-glow: rgba(70,130,180,0.4); background: rgba(255,255,255,0.7);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<path d="M18 8h22l8 8v40H18z"></path>
+<path class="fold" d="M40 8v10h10"></path>
+<rect class="chart-fill" height="10" rx="1" width="5" x="24" y="39"></rect>
+<rect class="chart-fill" height="17" rx="1" width="5" x="32" y="32"></rect>
+<rect class="chart-fill" height="24" rx="1" width="5" x="40" y="25"></rect>
+<path d="M24 25h14M24 32h8M24 50h22"></path>
+</svg></div><span class="node-label">REPORT</span></div>
+</div>
+</div>
+<!-- V6: FOREST NIGHT -->
+<div class="variant-container" id="v6" style="--accent-main: #32cd32;">
+<div class="variant-header">
+<div class="variant-indicator"></div>
+<h2 class="variant-title">06 / Forest Night (Neon Style)</h2>
+</div>
+<div class="workflow" style="--bg-main: #0a110a; --border-main: rgba(50,205,50,0.1);">
+<svg class="lines" viewbox="0 0 1060 380">
+<path class="line" d="M177 185 C255 185, 250 115, 335 115" style="stroke: #adff2f; --line-glow: #adff2f;"></path>
+<path class="line" d="M177 185 C285 185, 340 275, 485 275" style="stroke: #32cd32; --line-glow: #32cd32;"></path>
+<path class="line" d="M467 115 C620 115, 705 120, 825 180" style="stroke: #00ff7f; --line-glow: #00ff7f;"></path>
+<path class="line" d="M617 275 C710 275, 735 210, 825 200" style="stroke: #9acd32; --line-glow: #9acd32;"></path>
+</svg>
+<div aria-label="FILE TRANSFER" class="node box-1 style-neon file-transfer" data-step="1" style="--node-accent: #adff2f; --node-glow: rgba(173,255,47,0.5);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<path d="M13 14h18l5 6h15a4 4 0 0 1 4 4v24a5 5 0 0 1-5 5H14a5 5 0 0 1-5-5V18a4 4 0 0 1 4-4z"></path>
+<path class="arrow-line" d="M20 35h22"></path>
+<path d="M36 27l9 8-9 8"></path>
+<rect class="packet" height="8" rx="2" width="8" x="17" y="30"></rect>
+<rect class="packet" height="8" rx="2" width="8" x="27" y="30"></rect>
+</svg></div><span class="node-label">FILE TRANSFER</span></div>
+<div aria-label="MAINFRAME" class="node box-2 style-neon mainframe" data-step="2" style="--node-accent: #32cd32; --node-glow: rgba(50,205,50,0.5);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<rect height="50" rx="6" width="36" x="14" y="7"></rect>
+<line class="rack-line" x1="20" x2="44" y1="18" y2="18"></line>
+<line class="rack-line" x1="20" x2="44" y1="29" y2="29"></line>
+<line class="rack-line" x1="20" x2="44" y1="40" y2="40"></line>
+<circle class="status-dot" cx="23" cy="50" r="2.5"></circle>
+<circle class="status-dot" cx="32" cy="50" r="2.5"></circle>
+<circle class="status-dot" cx="41" cy="50" r="2.5"></circle>
+</svg></div><span class="node-label">MAINFRAME</span></div>
+<div aria-label="BO" class="node box-3 style-neon bo-system" data-step="3" style="--node-accent: #00ff7f; --node-glow: rgba(0,255,127,0.5);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<circle cx="32" cy="31" r="10"></circle>
+<circle cx="16" cy="18" r="6"></circle>
+<circle cx="48" cy="18" r="6"></circle>
+<circle cx="16" cy="46" r="6"></circle>
+<circle cx="48" cy="46" r="6"></circle>
+<path d="M22 21l8 6M42 21l-8 6M22 43l8-7M42 43l-8-7"></path>
+<text class="bo-text" x="21" y="37">BO</text>
+<circle class="hub" cx="16" cy="18" r="2"></circle><circle class="hub" cx="48" cy="18" r="2"></circle>
+<circle class="hub" cx="16" cy="46" r="2"></circle><circle class="hub" cx="48" cy="46" r="2"></circle>
+</svg></div><span class="node-label">BO</span></div>
+<div aria-label="REPORT" class="node box-4 style-neon report-node" data-step="4" style="--node-accent: #9acd32; --node-glow: rgba(154,205,50,0.5);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<path d="M18 8h22l8 8v40H18z"></path>
+<path class="fold" d="M40 8v10h10"></path>
+<rect class="chart-fill" height="10" rx="1" width="5" x="24" y="39"></rect>
+<rect class="chart-fill" height="17" rx="1" width="5" x="32" y="32"></rect>
+<rect class="chart-fill" height="24" rx="1" width="5" x="40" y="25"></rect>
+<path d="M24 25h14M24 32h8M24 50h22"></path>
+</svg></div><span class="node-label">REPORT</span></div>
+</div>
+</div>
+<!-- V7: AMETHYST & SILVER -->
+<div class="variant-container" id="v7" style="--accent-main: #9932cc;">
+<div class="variant-header">
+<div class="variant-indicator"></div>
+<h2 class="variant-title">07 / Amethyst &amp; Silver (Acrylic Style)</h2>
+</div>
+<div class="workflow" style="--bg-main: #0d0a15; --border-main: rgba(153,50,204,0.2);">
+<svg class="lines" viewbox="0 0 1060 380">
+<path class="line" d="M177 185 C255 185, 250 115, 335 115" style="stroke: #e6e6fa; --line-glow: #e6e6fa;"></path>
+<path class="line" d="M177 185 C285 185, 340 275, 485 275" style="stroke: #9932cc; --line-glow: #9932cc;"></path>
+<path class="line" d="M467 115 C620 115, 705 120, 825 180" style="stroke: #da70d6; --line-glow: #da70d6;"></path>
+<path class="line" d="M617 275 C710 275, 735 210, 825 200" style="stroke: #d8bfd8; --line-glow: #d8bfd8;"></path>
+</svg>
+<div aria-label="FILE TRANSFER" class="node box-1 style-acrylic file-transfer" data-step="1" style="--node-accent: #e6e6fa; --node-accent-soft: rgba(230,230,250,0.2); --node-glow: rgba(230,230,250,0.3);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<path d="M13 14h18l5 6h15a4 4 0 0 1 4 4v24a5 5 0 0 1-5 5H14a5 5 0 0 1-5-5V18a4 4 0 0 1 4-4z"></path>
+<path class="arrow-line" d="M20 35h22"></path>
+<path d="M36 27l9 8-9 8"></path>
+<rect class="packet" height="8" rx="2" width="8" x="17" y="30"></rect>
+<rect class="packet" height="8" rx="2" width="8" x="27" y="30"></rect>
+</svg></div><span class="node-label">FILE TRANSFER</span></div>
+<div aria-label="MAINFRAME" class="node box-2 style-acrylic mainframe" data-step="2" style="--node-accent: #9932cc; --node-accent-soft: rgba(153,50,204,0.2); --node-glow: rgba(153,50,204,0.3);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<rect height="50" rx="6" width="36" x="14" y="7"></rect>
+<line class="rack-line" x1="20" x2="44" y1="18" y2="18"></line>
+<line class="rack-line" x1="20" x2="44" y1="29" y2="29"></line>
+<line class="rack-line" x1="20" x2="44" y1="40" y2="40"></line>
+<circle class="status-dot" cx="23" cy="50" r="2.5"></circle>
+<circle class="status-dot" cx="32" cy="50" r="2.5"></circle>
+<circle class="status-dot" cx="41" cy="50" r="2.5"></circle>
+</svg></div><span class="node-label">MAINFRAME</span></div>
+<div aria-label="BO" class="node box-3 style-acrylic bo-system" data-step="3" style="--node-accent: #da70d6; --node-accent-soft: rgba(218,112,214,0.2); --node-glow: rgba(218,112,214,0.3);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<circle cx="32" cy="31" r="10"></circle>
+<circle cx="16" cy="18" r="6"></circle>
+<circle cx="48" cy="18" r="6"></circle>
+<circle cx="16" cy="46" r="6"></circle>
+<circle cx="48" cy="46" r="6"></circle>
+<path d="M22 21l8 6M42 21l-8 6M22 43l8-7M42 43l-8-7"></path>
+<text class="bo-text" x="21" y="37">BO</text>
+<circle class="hub" cx="16" cy="18" r="2"></circle><circle class="hub" cx="48" cy="18" r="2"></circle>
+<circle class="hub" cx="16" cy="46" r="2"></circle><circle class="hub" cx="48" cy="46" r="2"></circle>
+</svg></div><span class="node-label">BO</span></div>
+<div aria-label="REPORT" class="node box-4 style-acrylic report-node" data-step="4" style="--node-accent: #d8bfd8; --node-accent-soft: rgba(216,191,216,0.2); --node-glow: rgba(216,191,216,0.3);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<path d="M18 8h22l8 8v40H18z"></path>
+<path class="fold" d="M40 8v10h10"></path>
+<rect class="chart-fill" height="10" rx="1" width="5" x="24" y="39"></rect>
+<rect class="chart-fill" height="17" rx="1" width="5" x="32" y="32"></rect>
+<rect class="chart-fill" height="24" rx="1" width="5" x="40" y="25"></rect>
+<path d="M24 25h14M24 32h8M24 50h22"></path>
+</svg></div><span class="node-label">REPORT</span></div>
+</div>
+</div>
+<!-- V8: ELECTRIC COBALT -->
+<div class="variant-container" id="v8" style="--accent-main: #0047ab;">
+<div class="variant-header">
+<div class="variant-indicator"></div>
+<h2 class="variant-title">08 / Electric Cobalt (Minimalist Style)</h2>
+</div>
+<div class="workflow" style="--bg-main: #000411; --border-main: rgba(0,71,171,0.3);">
+<svg class="lines" viewbox="0 0 1060 380">
+<path class="line" d="M177 185 C255 185, 250 115, 335 115" style="stroke: #0047ab; --line-glow: #0047ab;"></path>
+<path class="line" d="M177 185 C285 185, 340 275, 485 275" style="stroke: #00bfff; --line-glow: #00bfff;"></path>
+<path class="line" d="M467 115 C620 115, 705 120, 825 180" style="stroke: #0000ff; --line-glow: #0000ff;"></path>
+<path class="line" d="M617 275 C710 275, 735 210, 825 200" style="stroke: #1e90ff; --line-glow: #1e90ff;"></path>
+</svg>
+<div aria-label="FILE TRANSFER" class="node box-1 style-minimal file-transfer" data-step="1" style="--node-accent: #0047ab; --node-glow: rgba(0,71,171,0.5);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<path d="M13 14h18l5 6h15a4 4 0 0 1 4 4v24a5 5 0 0 1-5 5H14a5 5 0 0 1-5-5V18a4 4 0 0 1 4-4z"></path>
+<path class="arrow-line" d="M20 35h22"></path>
+<path d="M36 27l9 8-9 8"></path>
+<rect class="packet" height="8" rx="2" width="8" x="17" y="30"></rect>
+<rect class="packet" height="8" rx="2" width="8" x="27" y="30"></rect>
+</svg></div><span class="node-label">FILE TRANSFER</span></div>
+<div aria-label="MAINFRAME" class="node box-2 style-minimal mainframe" data-step="2" style="--node-accent: #00bfff; --node-glow: rgba(0,191,255,0.5);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<rect height="50" rx="6" width="36" x="14" y="7"></rect>
+<line class="rack-line" x1="20" x2="44" y1="18" y2="18"></line>
+<line class="rack-line" x1="20" x2="44" y1="29" y2="29"></line>
+<line class="rack-line" x1="20" x2="44" y1="40" y2="40"></line>
+<circle class="status-dot" cx="23" cy="50" r="2.5"></circle>
+<circle class="status-dot" cx="32" cy="50" r="2.5"></circle>
+<circle class="status-dot" cx="41" cy="50" r="2.5"></circle>
+</svg></div><span class="node-label">MAINFRAME</span></div>
+<div aria-label="BO" class="node box-3 style-minimal bo-system" data-step="3" style="--node-accent: #0000ff; --node-glow: rgba(0,0,255,0.5);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<circle cx="32" cy="31" r="10"></circle>
+<circle cx="16" cy="18" r="6"></circle>
+<circle cx="48" cy="18" r="6"></circle>
+<circle cx="16" cy="46" r="6"></circle>
+<circle cx="48" cy="46" r="6"></circle>
+<path d="M22 21l8 6M42 21l-8 6M22 43l8-7M42 43l-8-7"></path>
+<text class="bo-text" x="21" y="37">BO</text>
+<circle class="hub" cx="16" cy="18" r="2"></circle><circle class="hub" cx="48" cy="18" r="2"></circle>
+<circle class="hub" cx="16" cy="46" r="2"></circle><circle class="hub" cx="48" cy="46" r="2"></circle>
+</svg></div><span class="node-label">BO</span></div>
+<div aria-label="REPORT" class="node box-4 style-minimal report-node" data-step="4" style="--node-accent: #1e90ff; --node-glow: rgba(30,144,255,0.5);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<path d="M18 8h22l8 8v40H18z"></path>
+<path class="fold" d="M40 8v10h10"></path>
+<rect class="chart-fill" height="10" rx="1" width="5" x="24" y="39"></rect>
+<rect class="chart-fill" height="17" rx="1" width="5" x="32" y="32"></rect>
+<rect class="chart-fill" height="24" rx="1" width="5" x="40" y="25"></rect>
+<path d="M24 25h14M24 32h8M24 50h22"></path>
+</svg></div><span class="node-label">REPORT</span></div>
+</div>
+</div>
+<!-- V9: SUNSET GRADIENT -->
+<div class="variant-container" id="v9" style="--accent-main: #ff8c00;">
+<div class="variant-header">
+<div class="variant-indicator"></div>
+<h2 class="variant-title">09 / Sunset Glow (Acrylic Style)</h2>
+</div>
+<div class="workflow" style="--bg-main: #140d0a; --border-main: rgba(255,140,0,0.15);">
+<svg class="lines" viewbox="0 0 1060 380">
+<path class="line" d="M177 185 C255 185, 250 115, 335 115" style="stroke: #ff4500; --line-glow: #ff4500;"></path>
+<path class="line" d="M177 185 C285 185, 340 275, 485 275" style="stroke: #ff8c00; --line-glow: #ff8c00;"></path>
+<path class="line" d="M467 115 C620 115, 705 120, 825 180" style="stroke: #ffd700; --line-glow: #ffd700;"></path>
+<path class="line" d="M617 275 C710 275, 735 210, 825 200" style="stroke: #ff6347; --line-glow: #ff6347;"></path>
+</svg>
+<div aria-label="FILE TRANSFER" class="node box-1 style-acrylic file-transfer" data-step="1" style="--node-accent: #ff4500; --node-accent-soft: rgba(255,69,0,0.2); --node-glow: rgba(255,69,0,0.3);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<path d="M13 14h18l5 6h15a4 4 0 0 1 4 4v24a5 5 0 0 1-5 5H14a5 5 0 0 1-5-5V18a4 4 0 0 1 4-4z"></path>
+<path class="arrow-line" d="M20 35h22"></path>
+<path d="M36 27l9 8-9 8"></path>
+<rect class="packet" height="8" rx="2" width="8" x="17" y="30"></rect>
+<rect class="packet" height="8" rx="2" width="8" x="27" y="30"></rect>
+</svg></div><span class="node-label">FILE TRANSFER</span></div>
+<div aria-label="MAINFRAME" class="node box-2 style-acrylic mainframe" data-step="2" style="--node-accent: #ff8c00; --node-accent-soft: rgba(255,140,0,0.2); --node-glow: rgba(255,140,0,0.3);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<rect height="50" rx="6" width="36" x="14" y="7"></rect>
+<line class="rack-line" x1="20" x2="44" y1="18" y2="18"></line>
+<line class="rack-line" x1="20" x2="44" y1="29" y2="29"></line>
+<line class="rack-line" x1="20" x2="44" y1="40" y2="40"></line>
+<circle class="status-dot" cx="23" cy="50" r="2.5"></circle>
+<circle class="status-dot" cx="32" cy="50" r="2.5"></circle>
+<circle class="status-dot" cx="41" cy="50" r="2.5"></circle>
+</svg></div><span class="node-label">MAINFRAME</span></div>
+<div aria-label="BO" class="node box-3 style-acrylic bo-system" data-step="3" style="--node-accent: #ffd700; --node-accent-soft: rgba(255,215,0,0.2); --node-glow: rgba(255,215,0,0.3);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<circle cx="32" cy="31" r="10"></circle>
+<circle cx="16" cy="18" r="6"></circle>
+<circle cx="48" cy="18" r="6"></circle>
+<circle cx="16" cy="46" r="6"></circle>
+<circle cx="48" cy="46" r="6"></circle>
+<path d="M22 21l8 6M42 21l-8 6M22 43l8-7M42 43l-8-7"></path>
+<text class="bo-text" x="21" y="37">BO</text>
+<circle class="hub" cx="16" cy="18" r="2"></circle><circle class="hub" cx="48" cy="18" r="2"></circle>
+<circle class="hub" cx="16" cy="46" r="2"></circle><circle class="hub" cx="48" cy="46" r="2"></circle>
+</svg></div><span class="node-label">BO</span></div>
+<div aria-label="REPORT" class="node box-4 style-acrylic report-node" data-step="4" style="--node-accent: #ff6347; --node-accent-soft: rgba(255,99,71,0.2); --node-glow: rgba(255,99,71,0.3);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<path d="M18 8h22l8 8v40H18z"></path>
+<path class="fold" d="M40 8v10h10"></path>
+<rect class="chart-fill" height="10" rx="1" width="5" x="24" y="39"></rect>
+<rect class="chart-fill" height="17" rx="1" width="5" x="32" y="32"></rect>
+<rect class="chart-fill" height="24" rx="1" width="5" x="40" y="25"></rect>
+<path d="M24 25h14M24 32h8M24 50h22"></path>
+</svg></div><span class="node-label">REPORT</span></div>
+</div>
+</div>
+<!-- V10: MONO CHROME -->
+<div class="variant-container" id="v10" style="--accent-main: #ffffff;">
+<div class="variant-header">
+<div class="variant-indicator"></div>
+<h2 class="variant-title">10 / Industrial Mono (Neon Style)</h2>
+</div>
+<div class="workflow" style="--bg-main: #000; --border-main: rgba(255,255,255,0.1);">
+<svg class="lines" viewbox="0 0 1060 380">
+<path class="line" d="M177 185 C255 185, 250 115, 335 115" style="stroke: #fff; --line-glow: #fff;"></path>
+<path class="line" d="M177 185 C285 185, 340 275, 485 275" style="stroke: #888; --line-glow: #888;"></path>
+<path class="line" d="M467 115 C620 115, 705 120, 825 180" style="stroke: #ccc; --line-glow: #ccc;"></path>
+<path class="line" d="M617 275 C710 275, 735 210, 825 200" style="stroke: #666; --line-glow: #666;"></path>
+</svg>
+<div aria-label="FILE TRANSFER" class="node box-1 style-neon file-transfer" data-step="1" style="--node-accent: #fff; --node-glow: rgba(255,255,255,0.4);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<path d="M13 14h18l5 6h15a4 4 0 0 1 4 4v24a5 5 0 0 1-5 5H14a5 5 0 0 1-5-5V18a4 4 0 0 1 4-4z"></path>
+<path class="arrow-line" d="M20 35h22"></path>
+<path d="M36 27l9 8-9 8"></path>
+<rect class="packet" height="8" rx="2" width="8" x="17" y="30"></rect>
+<rect class="packet" height="8" rx="2" width="8" x="27" y="30"></rect>
+</svg></div><span class="node-label">FILE TRANSFER</span></div>
+<div aria-label="MAINFRAME" class="node box-2 style-neon mainframe" data-step="2" style="--node-accent: #888; --node-glow: rgba(136,136,136,0.4);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<rect height="50" rx="6" width="36" x="14" y="7"></rect>
+<line class="rack-line" x1="20" x2="44" y1="18" y2="18"></line>
+<line class="rack-line" x1="20" x2="44" y1="29" y2="29"></line>
+<line class="rack-line" x1="20" x2="44" y1="40" y2="40"></line>
+<circle class="status-dot" cx="23" cy="50" r="2.5"></circle>
+<circle class="status-dot" cx="32" cy="50" r="2.5"></circle>
+<circle class="status-dot" cx="41" cy="50" r="2.5"></circle>
+</svg></div><span class="node-label">MAINFRAME</span></div>
+<div aria-label="BO" class="node box-3 style-neon bo-system" data-step="3" style="--node-accent: #ccc; --node-glow: rgba(204,204,204,0.4);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<circle cx="32" cy="31" r="10"></circle>
+<circle cx="16" cy="18" r="6"></circle>
+<circle cx="48" cy="18" r="6"></circle>
+<circle cx="16" cy="46" r="6"></circle>
+<circle cx="48" cy="46" r="6"></circle>
+<path d="M22 21l8 6M42 21l-8 6M22 43l8-7M42 43l-8-7"></path>
+<text class="bo-text" x="21" y="37">BO</text>
+<circle class="hub" cx="16" cy="18" r="2"></circle><circle class="hub" cx="48" cy="18" r="2"></circle>
+<circle class="hub" cx="16" cy="46" r="2"></circle><circle class="hub" cx="48" cy="46" r="2"></circle>
+</svg></div><span class="node-label">BO</span></div>
+<div aria-label="REPORT" class="node box-4 style-neon report-node" data-step="4" style="--node-accent: #666; --node-glow: rgba(102,102,102,0.4);"><div class="icon-wrap"><svg aria-hidden="true" viewbox="0 0 64 64">
+<path d="M18 8h22l8 8v40H18z"></path>
+<path class="fold" d="M40 8v10h10"></path>
+<rect class="chart-fill" height="10" rx="1" width="5" x="24" y="39"></rect>
+<rect class="chart-fill" height="17" rx="1" width="5" x="32" y="32"></rect>
+<rect class="chart-fill" height="24" rx="1" width="5" x="40" y="25"></rect>
+<path d="M24 25h14M24 32h8M24 50h22"></path>
+</svg></div><span class="node-label">REPORT</span></div>
+</div>
+</div>
+</body></html>
